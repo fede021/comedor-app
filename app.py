@@ -1,4 +1,5 @@
-from flask import Flask, render_template, request, redirect, flash
+# app.py
+from flask import Flask, render_template, request, redirect, flash, url_for
 from flask_sqlalchemy import SQLAlchemy
 from datetime import date
 
@@ -19,20 +20,17 @@ class Retiro(db.Model):
     importe     = db.Column(db.Float, nullable=False)
     empleado    = db.relationship('Empleado', backref='retiros')
 
-# crea las tablas al iniciar
 with app.app_context():
     db.create_all()
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
-        raw = request.form['dni'].strip()
-        # parseo DNI del string QR (antes de la primera @)
-        dni = raw.split('@', 1)[0]
+        dni     = request.form['dni'].strip()
         importe = request.form.get('importe', type=float)
-        hoy = date.today()
+        hoy     = date.today()
+        emp     = Empleado.query.filter_by(dni=dni).first()
 
-        emp = Empleado.query.filter_by(dni=dni).first()
         if not emp:
             flash("DNI no registrado", "error")
             return redirect('/')
@@ -60,8 +58,7 @@ def registros():
 @app.route('/empleados', methods=['GET', 'POST'])
 def empleados():
     if request.method == 'POST':
-        raw = request.form['dni'].strip()
-        dni = raw.split('@', 1)[0]
+        dni    = request.form['dni'].strip()
         nombre = request.form['nombre'].strip()
 
         if Empleado.query.filter_by(dni=dni).first():
@@ -70,10 +67,9 @@ def empleados():
             db.session.add(Empleado(dni=dni, nombre=nombre))
             db.session.commit()
             flash("Empleado registrado", "success")
-
         return redirect('/empleados')
 
-    todos = Empleado.query.order_by(Empleado.nombre).all()
+    todos = Empleado.query.order_by(Empleado.id).all()
     return render_template('empleados.html', empleados=todos)
 
 @app.route('/empleados/delete/<int:id>', methods=['POST'])

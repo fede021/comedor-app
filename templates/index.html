@@ -1,12 +1,12 @@
+<!-- templates/index.html -->
 {% extends "base.html" %}
 {% block content %}
   <h1>Retiro de comida</h1>
 
   <div id="qr-reader" style="width:300px"></div>
   <form method="POST">
-    <!-- guardamos toda la cadena de QR en el input dni -->
     <input name="dni" id="dni" placeholder="DNI completo" required>
-    <input name="importe" type="number" step="0.01" placeholder="Importe" required>
+    <input name="importe" type="number" step="100" value="1500" placeholder="Importe" required>
     <button>Retirar</button>
   </form>
 
