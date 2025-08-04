@@ -1,12 +1,17 @@
-<!-- templates/registros.html -->
 {% extends "base.html" %}
 {% block content %}
   <h1>Registros de hoy</h1>
   <table>
-    <tr><th>DNI completo</th><th>Nombre</th><th>Importe</th></tr>
+    <tr>
+      <th>Fecha</th>
+      <th>Hora</th>
+      <th>Nombre</th>
+      <th>Importe</th>
+    </tr>
     {% for r in lista %}
       <tr>
-        <td style="white-space: pre-wrap; word-break: break-all;">{{ r.empleado.dni }}</td>
+        <td>{{ r.fecha_hora.strftime('%Y-%m-%d') }}</td>
+        <td>{{ r.fecha_hora.strftime('%H:%M:%S') }}</td>
         <td>{{ r.empleado.nombre }}</td>
         <td>{{ '%.2f' % r.importe }}</td>
       </tr>

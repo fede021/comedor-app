@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, flash, url_for
 from flask_sqlalchemy import SQLAlchemy
-from datetime import date
+from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = "algo-secreto"
@@ -15,11 +15,11 @@ class Empleado(db.Model):
 class Retiro(db.Model):
     id          = db.Column(db.Integer, primary_key=True)
     empleado_id = db.Column(db.Integer, db.ForeignKey('empleado.id'), nullable=False)
-    fecha       = db.Column(db.Date, nullable=False)
+    fecha_hora  = db.Column(db.DateTime, nullable=False, default=datetime.now)
     importe     = db.Column(db.Float, nullable=False)
     empleado    = db.relationship('Empleado', backref='retiros')
 
-# <-- creamos tablas apenas arranca la app
+# crea tablas al arrancar la app
 with app.app_context():
     db.create_all()
 
@@ -28,18 +28,23 @@ def index():
     if request.method == 'POST':
         dni     = request.form['dni'].strip()
         importe = request.form.get('importe', type=float)
-        hoy     = date.today()
         emp     = Empleado.query.filter_by(dni=dni).first()
 
         if not emp:
             flash("DNI no registrado", "error")
             return redirect('/')
 
-        if Retiro.query.filter_by(empleado_id=emp.id, fecha=hoy).first():
+        # validación de único retiro diario
+        hoy = datetime.now().date()
+        existe = Retiro.query.filter(
+            Retiro.empleado_id==emp.id,
+            db.func.date(Retiro.fecha_hora)==hoy
+        ).first()
+        if existe:
             flash("Ya retiraste hoy", "error")
             return redirect('/')
 
-        db.session.add(Retiro(empleado_id=emp.id, fecha=hoy, importe=importe))
+        db.session.add(Retiro(empleado_id=emp.id, importe=importe))
         db.session.commit()
         flash(f"Ok, {emp.nombre}: retiro registrado", "success")
         return redirect('/')
@@ -48,10 +53,11 @@ def index():
 
 @app.route('/registros')
 def registros():
-    hoy = date.today()
+    hoy = datetime.now().date()
+    # obtengo sólo los de hoy
     lista = (Retiro.query
              .join(Empleado)
-             .filter(Retiro.fecha == hoy)
+             .filter(db.func.date(Retiro.fecha_hora)==hoy)
              .all())
     return render_template('registros.html', lista=lista)
 
