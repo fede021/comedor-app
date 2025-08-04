@@ -8,8 +8,8 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
-# Activar FK en SQLite para que ON DELETE CASCADE funcione
-@app.before_first_request
+# activar FK en SQLite para que ondelete CASCADE funcione
+@app.before_serving
 def _activate_fks():
     db.engine.execute('PRAGMA foreign_keys=ON')
 
@@ -17,7 +17,7 @@ class Empleado(db.Model):
     __tablename__ = 'empleado'
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(100), nullable=False)
-    # ...otros campos de empleado...
+    # ...otros campos...
     retiros = db.relationship(
         'Retiro',
         backref='empleado',
@@ -29,7 +29,7 @@ class Retiro(db.Model):
     __tablename__ = 'retiro'
     id = db.Column(db.Integer, primary_key=True)
     fecha = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-    # ...otros campos de retiro...
+    # ...otros campos...
     empleado_id = db.Column(
         db.Integer,
         db.ForeignKey('empleado.id', ondelete='CASCADE'),
@@ -48,8 +48,7 @@ def borrar_empleado(id):
     db.session.commit()
     return redirect(url_for('lista_empleados'))
 
-# Resto de tus rutas...
-# @app.route('/empleados/create', ...) etc.
+# ...el resto de tus rutas...
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
