@@ -76,5 +76,13 @@ def empleados():
     todos = Empleado.query.order_by(Empleado.nombre).all()
     return render_template('empleados.html', empleados=todos)
 
+@app.route('/empleados/delete/<int:id>', methods=['POST'])
+def borrar_empleado(id):
+    emp = Empleado.query.get_or_404(id)
+    db.session.delete(emp)
+    db.session.commit()
+    flash(f"Empleado {emp.nombre} borrado", "success")
+    return redirect(url_for('empleados'))
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
