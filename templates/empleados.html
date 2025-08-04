@@ -2,26 +2,17 @@
 {% block content %}
   <h1>Alta de Empleados</h1>
 
-  <div id="qr-reader-empleados"></div>
+  <div id="qr-reader-empleados" style="width:100%; max-width:400px; margin:1em auto;"></div>
+  <div style="text-align:center; margin-bottom:1em;">
+    <button id="start-btn-e" type="button">Iniciar Scanner</button>
+    <button id="stop-btn-e" type="button" disabled>Detener Scanner</button>
+  </div>
+
   <form method="POST">
     <input name="dni" placeholder="Escaneá o escribí texto completo del DNI" required>
     <input name="nombre" placeholder="Nombre" required>
     <button type="submit">Registrar</button>
   </form>
-
-  <script src="https://unpkg.com/html5-qrcode"></script>
-  <script>
-    function onScanSuccessE(decodedText) {
-      document.querySelector('input[name="dni"]').value = decodedText;
-      qrEmpleado.clear();
-    }
-    const qrEmpleado = new Html5Qrcode("qr-reader-empleados");
-    qrEmpleado.start(
-      { facingMode: "environment" },
-      { fps: 10, qrbox: 250 },
-      onScanSuccessE
-    );
-  </script>
 
   <h2>Listado de Empleados</h2>
   <table>
@@ -31,11 +22,58 @@
         <td style="word-break:break-all;">{{ e.dni }}</td>
         <td>{{ e.nombre }}</td>
         <td>
-          <form method="POST" action="{{ url_for('borrar_empleado',id=e.id) }}" onsubmit="return confirm('Seguro querés borrar a {{e.nombre}}?');">
+          <form method="POST" action="{{ url_for('borrar_empleado',id=e.id) }}"
+                onsubmit="return confirm('Seguro querés borrar a {{e.nombre}}?');">
             <button type="submit">Borrar</button>
           </form>
         </td>
       </tr>
     {% endfor %}
   </table>
+
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <script>
+    const qrRegionE = document.getElementById("qr-reader-empleados");
+    const startBtnE = document.getElementById("start-btn-e");
+    const stopBtnE  = document.getElementById("stop-btn-e");
+    const html5QrCodeE = new Html5Qrcode("qr-reader-empleados");
+    const configE = {
+      fps: 10,
+      qrbox: { width: 300, height: 300 },
+      videoConstraints: { facingMode: "environment" }
+    };
+
+    function onScanSuccessE(decodedText) {
+      document.querySelector('input[name="dni"]').value = decodedText;
+    }
+
+    function startScannerE() {
+      Html5Qrcode.getCameras()
+        .then(cameras => {
+          if (cameras && cameras.length) {
+            html5QrCodeE.start(
+              { deviceId: cameras[0].id },
+              configE,
+              onScanSuccessE,
+              err => {}
+            );
+            startBtnE.disabled = true;
+            stopBtnE.disabled  = false;
+          }
+        })
+        .catch(err => console.error(err));
+    }
+
+    function stopScannerE() {
+      html5QrCodeE.stop()
+        .then(() => {
+          startBtnE.disabled = false;
+          stopBtnE.disabled  = true;
+        })
+        .catch(err => console.error(err));
+    }
+
+    startBtnE.addEventListener("click", startScannerE);
+    stopBtnE .addEventListener("click", stopScannerE);
+  </script>
 {% endblock %}

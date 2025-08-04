@@ -2,8 +2,11 @@
 {% block content %}
   <h1>Retiro de comida</h1>
 
-  <!-- contenedor del lector -->
   <div id="qr-reader" style="width:100%; max-width:400px; margin:1em auto;"></div>
+  <div style="text-align:center; margin-bottom:1em;">
+    <button id="start-btn" type="button">Iniciar Scanner</button>
+    <button id="stop-btn" type="button" disabled>Detener Scanner</button>
+  </div>
 
   <form method="POST">
     <input name="dni" id="dni" placeholder="Escaneá o escribí DNI completo" required>
@@ -13,6 +16,9 @@
 
   <script src="https://unpkg.com/html5-qrcode"></script>
   <script>
+    const qrRegion = document.getElementById("qr-reader");
+    const startBtn = document.getElementById("start-btn");
+    const stopBtn  = document.getElementById("stop-btn");
     const html5QrCode = new Html5Qrcode("qr-reader");
     const config = {
       fps: 10,
@@ -25,24 +31,41 @@
       }
     };
 
-    Html5Qrcode.getCameras()
-      .then(cameras => {
-        if (cameras && cameras.length) {
-          html5QrCode.start(
-            { deviceId: cameras[0].id },
-            config,
-            decodedText => {
-              document.getElementById('dni').value = decodedText;
-              html5QrCode.stop();
-            },
-            errorMessage => {
-              // opcional: console.log(errorMessage);
-            }
-          );
-        }
-      })
-      .catch(err => {
-        console.error('Error al obtener cámaras:', err);
-      });
+    function onScanSuccess(decodedText) {
+      document.getElementById('dni').value = decodedText;
+      // opcional: detener tras primer acierto
+      // html5QrCode.stop();
+      // stopBtn.disabled = true;
+      // startBtn.disabled = false;
+    }
+
+    function startScanner() {
+      Html5Qrcode.getCameras()
+        .then(cameras => {
+          if (cameras && cameras.length) {
+            html5QrCode.start(
+              { deviceId: cameras[0].id },
+              config,
+              onScanSuccess,
+              err => {} 
+            );
+            startBtn.disabled = true;
+            stopBtn.disabled  = false;
+          }
+        })
+        .catch(err => console.error(err));
+    }
+
+    function stopScanner() {
+      html5QrCode.stop()
+        .then(() => {
+          startBtn.disabled = false;
+          stopBtn.disabled  = true;
+        })
+        .catch(err => console.error(err));
+    }
+
+    startBtn.addEventListener("click", startScanner);
+    stopBtn .addEventListener("click", stopScanner);
   </script>
 {% endblock %}
