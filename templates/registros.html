@@ -1,16 +1,14 @@
-<!DOCTYPE html>
-<html>
-<body>
+{% extends "base.html" %}
+{% block content %}
   <h1>Registros de hoy</h1>
   <table>
-    <tr><th>DNI</th><th>Nombre</th><th>Importe</th></tr>
+    <tr><th>DNI completo</th><th>Nombre</th><th>Importe</th></tr>
     {% for r in lista %}
       <tr>
-        <td>{{r.empleado.dni}}</td>
-        <td>{{r.empleado.nombre}}</td>
-        <td>{{'%.2f' % r.importe}}</td>
+        <td>{{ r.empleado.dni }}</td>
+        <td>{{ r.empleado.nombre }}</td>
+        <td>{{ '%.2f' % r.importe }}</td>
       </tr>
     {% endfor %}
   </table>
-</body>
-</html>
+{% endblock %}

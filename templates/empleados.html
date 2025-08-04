@@ -1,32 +1,23 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>Alta de Empleados</title>
-</head>
-<body>
+{% extends "base.html" %}
+{% block content %}
   <h1>Alta de Empleados</h1>
-  {% with msgs = get_flashed_messages(with_categories=true) %}
-    {% for cat, msg in msgs %}
-      <div class="{{cat}}">{{msg}}</div>
-    {% endfor %}
-  {% endwith %}
 
   <form method="POST">
-    <input name="dni" placeholder="DNI" required>
+    <!-- el campo DNI recibe la cadena entera -->
+    <input name="dni" placeholder="DNI completo" required>
     <input name="nombre" placeholder="Nombre" required>
     <button>Registrar</button>
   </form>
 
   <h2>Listado de Empleados</h2>
   <table>
-    <tr><th>DNI</th><th>Nombre</th></tr>
+    <tr><th>DNI completo</th><th>Nombre</th></tr>
     {% for e in empleados %}
       <tr>
+        <!-- mostramos toda la cadena DNI -->
         <td>{{ e.dni }}</td>
         <td>{{ e.nombre }}</td>
       </tr>
     {% endfor %}
   </table>
-</body>
-</html>
+{% endblock %}
