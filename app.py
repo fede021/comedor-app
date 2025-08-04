@@ -10,47 +10,71 @@ db = SQLAlchemy(app)
 class Empleado(db.Model):
     id     = db.Column(db.Integer, primary_key=True)
     dni    = db.Column(db.String, unique=True, nullable=False)
-    nombre = db.Column(db.String)
+    nombre = db.Column(db.String, nullable=False)
 
 class Retiro(db.Model):
     id          = db.Column(db.Integer, primary_key=True)
     empleado_id = db.Column(db.Integer, db.ForeignKey('empleado.id'), nullable=False)
     fecha       = db.Column(db.Date, nullable=False)
     importe     = db.Column(db.Float, nullable=False)
-    empleado    = db.relationship('Empleado')
+    empleado    = db.relationship('Empleado', backref='retiros')
 
-# crea las tablas al iniciar la app
+# crea las tablas al iniciar
 with app.app_context():
     db.create_all()
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
-        dni     = request.form['dni']
-        importe = float(request.form['importe'])
-        hoy     = date.today()
-        emp     = Empleado.query.filter_by(dni=dni).first()
+        raw = request.form['dni'].strip()
+        # parseo DNI del string QR (antes de la primera @)
+        dni = raw.split('@', 1)[0]
+        importe = request.form.get('importe', type=float)
+        hoy = date.today()
 
+        emp = Empleado.query.filter_by(dni=dni).first()
         if not emp:
             flash("DNI no registrado", "error")
             return redirect('/')
 
         if Retiro.query.filter_by(empleado_id=emp.id, fecha=hoy).first():
             flash("Ya retiraste hoy", "error")
-        else:
-            nuevo = Retiro(empleado_id=emp.id, fecha=hoy, importe=importe)
-            db.session.add(nuevo)
-            db.session.commit()
-            flash(f"Ok, {emp.nombre}: retiro registrado", "success")
+            return redirect('/')
 
+        db.session.add(Retiro(empleado_id=emp.id, fecha=hoy, importe=importe))
+        db.session.commit()
+        flash(f"Ok, {emp.nombre}: retiro registrado", "success")
         return redirect('/')
+
     return render_template('index.html')
 
 @app.route('/registros')
 def registros():
-    hoy   = date.today()
-    lista = Retiro.query.filter_by(fecha=hoy).all()
+    hoy = date.today()
+    lista = (Retiro.query
+             .join(Empleado)
+             .filter(Retiro.fecha == hoy)
+             .all())
     return render_template('registros.html', lista=lista)
+
+@app.route('/empleados', methods=['GET', 'POST'])
+def empleados():
+    if request.method == 'POST':
+        raw = request.form['dni'].strip()
+        dni = raw.split('@', 1)[0]
+        nombre = request.form['nombre'].strip()
+
+        if Empleado.query.filter_by(dni=dni).first():
+            flash("Ya existe un empleado con ese DNI", "error")
+        else:
+            db.session.add(Empleado(dni=dni, nombre=nombre))
+            db.session.commit()
+            flash("Empleado registrado", "success")
+
+        return redirect('/empleados')
+
+    todos = Empleado.query.order_by(Empleado.nombre).all()
+    return render_template('empleados.html', empleados=todos)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
