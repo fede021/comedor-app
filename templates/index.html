@@ -20,21 +20,16 @@
     const startBtn = document.getElementById("start-btn");
     const stopBtn  = document.getElementById("stop-btn");
     const html5QrCode = new Html5Qrcode("qr-reader");
-    const config = {
+    const configE = {
       fps: 10,
-      qrbox: { width: 350, height: 350 },
-      videoConstraints: {
-        facingMode: { ideal: "environment" },
-        width: { ideal: 1280 },
-        height: { ideal: 720 },
-        focusMode: "continuous"
-      }
+      qrbox: { width: 300, height: 300 },
+      videoConstraints: { facingMode: "environment" }
     };
 
     function onScanSuccess(decodedText) {
       document.getElementById('dni').value = decodedText;
       // opcional: detener tras primer acierto
-      // html5QrCode.stop();
+      html5QrCode.stop();
       // stopBtn.disabled = true;
       // startBtn.disabled = false;
     }
