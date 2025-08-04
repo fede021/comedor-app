@@ -45,6 +45,7 @@
 
     function onScanSuccessE(decodedText) {
       document.querySelector('input[name="dni"]').value = decodedText;
+      html5QrCode.stop();
     }
 
     function startScannerE() {
