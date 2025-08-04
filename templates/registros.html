@@ -1,17 +1,19 @@
 {% extends "base.html" %}
 {% block content %}
-  <h1>Registros de hoy</h1>
+  <h1>Registros</h1>
+  <form method="get" style="margin-bottom:1em;">
+    <input type="date" name="fecha" value="{{ fecha_str }}">
+    <button type="submit">Filtrar</button>
+    <a href="/registros" style="margin-left:0.5em;">Todos</a>
+    <a href="/registros?fecha={{ hoy_str }}" style="margin-left:0.5em;">Hoy</a>
+  </form>
+
   <table>
-    <tr>
-      <th>Fecha</th>
-      <th>Hora</th>
-      <th>Nombre</th>
-      <th>Importe</th>
-    </tr>
+    <tr><th>Fecha</th><th>Hora</th><th>Nombre</th><th>Importe</th></tr>
     {% for r in lista %}
       <tr>
         <td>{{ r.fecha_hora.strftime('%Y-%m-%d') }}</td>
-        <td>{{ r.fecha_hora.strftime('%H:%M:%S') }}</td>
+        <td>{{ r.fecha_hora.strftime('%H:%M') }}</td>
         <td>{{ r.empleado.nombre }}</td>
         <td>{{ '%.2f' % r.importe }}</td>
       </tr>

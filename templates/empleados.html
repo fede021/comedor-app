@@ -2,11 +2,26 @@
 {% block content %}
   <h1>Alta de Empleados</h1>
 
+  <div id="qr-reader-empleados"></div>
   <form method="POST">
-    <input name="dni" placeholder="Texto completo del DNI" required>
+    <input name="dni" placeholder="Escaneá o escribí texto completo del DNI" required>
     <input name="nombre" placeholder="Nombre" required>
     <button type="submit">Registrar</button>
   </form>
+
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <script>
+    function onScanSuccessE(decodedText) {
+      document.querySelector('input[name="dni"]').value = decodedText;
+      qrEmpleado.clear();
+    }
+    const qrEmpleado = new Html5Qrcode("qr-reader-empleados");
+    qrEmpleado.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: 250 },
+      onScanSuccessE
+    );
+  </script>
 
   <h2>Listado de Empleados</h2>
   <table>

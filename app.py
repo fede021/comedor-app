@@ -51,12 +51,22 @@ def index():
 
 @app.route('/registros')
 def registros():
-    hoy = datetime.now().date()
-    lista = (Retiro.query
-             .join(Empleado)
-             .filter(db.func.date(Retiro.fecha_hora)==hoy)
-             .all())
-    return render_template('registros.html', lista=lista)
+    fecha_str = request.args.get('fecha')
+    if fecha_str:
+        try:
+            fecha = datetime.strptime(fecha_str, '%Y-%m-%d').date()
+        except ValueError:
+            flash("Formato de fecha inválido", "error")
+            return redirect(url_for('registros'))
+        lista = (Retiro.query
+                 .join(Empleado)
+                 .filter(db.func.date(Retiro.fecha_hora)==fecha)
+                 .order_by(Retiro.fecha_hora)
+                 .all())
+    else:
+        lista = Retiro.query.join(Empleado).order_by(Retiro.fecha_hora).all()
+    hoy_str = datetime.now().strftime('%Y-%m-%d')
+    return render_template('registros.html', lista=lista, fecha_str=fecha_str or '', hoy_str=hoy_str)
 
 @app.route('/empleados', methods=['GET', 'POST'])
 def empleados():
