@@ -19,7 +19,6 @@ class Retiro(db.Model):
     importe     = db.Column(db.Float, nullable=False)
     empleado    = db.relationship('Empleado', backref='retiros')
 
-# crea tablas al arrancar la app
 with app.app_context():
     db.create_all()
 
@@ -34,7 +33,6 @@ def index():
             flash("DNI no registrado", "error")
             return redirect('/')
 
-        # validación de único retiro diario
         hoy = datetime.now().date()
         existe = Retiro.query.filter(
             Retiro.empleado_id==emp.id,
@@ -54,7 +52,6 @@ def index():
 @app.route('/registros')
 def registros():
     hoy = datetime.now().date()
-    # obtengo sólo los de hoy
     lista = (Retiro.query
              .join(Empleado)
              .filter(db.func.date(Retiro.fecha_hora)==hoy)

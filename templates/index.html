@@ -1,23 +1,23 @@
-<!-- templates/index.html -->
 {% extends "base.html" %}
 {% block content %}
   <h1>Retiro de comida</h1>
 
-  <div id="qr-reader" style="width:300px"></div>
+  <div id="qr-reader"></div>
   <form method="POST">
-    <input name="dni" id="dni" placeholder="DNI completo" required>
+    <input name="dni" id="dni" placeholder="Escaneá o escribí DNI completo" required>
     <input name="importe" type="number" step="100" value="1500" placeholder="Importe" required>
-    <button>Retirar</button>
+    <button type="submit">Retirar</button>
   </form>
 
   <script src="https://unpkg.com/html5-qrcode"></script>
   <script>
-    function onScanSuccess(decodedText){
+    function onScanSuccess(decodedText) {
       document.getElementById('dni').value = decodedText;
       html5QrcodeScanner.clear();
     }
     const html5QrcodeScanner = new Html5QrcodeScanner(
-      "qr-reader", { fps: 10, qrbox: 250 });
+      "qr-reader", { fps:10, qrbox:250 }
+    );
     html5QrcodeScanner.render(onScanSuccess);
   </script>
 {% endblock %}

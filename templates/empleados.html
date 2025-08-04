@@ -1,27 +1,14 @@
-<!-- templates/empleados.html -->
 {% extends "base.html" %}
 {% block content %}
-  <h1>Alta de Empleados</h1>
-
-  <form method="POST">
-    <input name="dni" placeholder="DNI completo" required>
-    <input name="nombre" placeholder="Nombre" required>
-    <button>Registrar</button>
-  </form>
-
-  <h2>Listado de Empleados</h2>
+  <h1>Registros de hoy</h1>
   <table>
-    <tr><th>DNI completo</th><th>Nombre</th><th>Acción</th></tr>
-    {% for e in empleados %}
+    <tr><th>Fecha</th><th>Hora</th><th>Nombre</th><th>Importe</th></tr>
+    {% for r in lista %}
       <tr>
-        <td style="white-space: pre-wrap; word-break: break-all;">{{ e.dni }}</td>
-        <td>{{ e.nombre }}</td>
-        <td>
-          <form method="POST" action="{{ url_for('borrar_empleado', id=e.id) }}"
-                onsubmit="return confirm('Seguro querés borrar a {{e.nombre}}?');">
-            <button type="submit">Borrar</button>
-          </form>
-        </td>
+        <td>{{ r.fecha_hora.strftime('%Y-%m-%d') }}</td>
+        <td>{{ r.fecha_hora.strftime('%H:%M') }}</td>
+        <td>{{ r.empleado.nombre }}</td>
+        <td>{{ '%.2f' % r.importe }}</td>
       </tr>
     {% endfor %}
   </table>
