@@ -9,7 +9,7 @@
   </div>
 
   <form method="POST">
-    <input name="dni" placeholder="Escaneá o escribí texto completo del DNI" required>
+    <input name="dni" id="dni" placeholder="Escaneá o escribí texto completo del DNI" required>
     <input name="nombre" placeholder="Nombre" required>
     <button type="submit">Registrar</button>
   </form>
@@ -22,8 +22,8 @@
         <td style="word-break:break-all;">{{ e.dni }}</td>
         <td>{{ e.nombre }}</td>
         <td>
-          <form method="POST" action="{{ url_for('borrar_empleado',id=e.id) }}"
-                onsubmit="return confirm('Seguro querés borrar a {{e.nombre}}?');">
+          <form method="POST" action="{{ url_for('borrar_empleado', id=e.id) }}"
+                onsubmit="return confirm('Seguro querés borrar a {{ e.nombre }}?');">
             <button type="submit">Borrar</button>
           </form>
         </td>
@@ -33,19 +33,23 @@
 
   <script src="https://unpkg.com/html5-qrcode"></script>
   <script>
-    const qrRegionE = document.getElementById("qr-reader-empleados");
     const startBtnE = document.getElementById("start-btn-e");
     const stopBtnE  = document.getElementById("stop-btn-e");
     const html5QrCodeE = new Html5Qrcode("qr-reader-empleados");
     const configE = {
       fps: 10,
       qrbox: { width: 300, height: 300 },
-      videoConstraints: { facingMode: "environment" }
+      videoConstraints: {
+        facingMode: { ideal: "environment" },
+        width: { ideal: 1280 },
+        height: { ideal: 720 },
+        focusMode: "continuous"
+      }
     };
 
     function onScanSuccessE(decodedText) {
-      document.querySelector('input[name="dni"]').value = decodedText;
-      html5QrCode.stop();
+      document.getElementById('dni').value = decodedText;
+      stopScannerE();  // detiene tras primer acierto
     }
 
     function startScannerE() {
@@ -56,13 +60,14 @@
               { deviceId: cameras[0].id },
               configE,
               onScanSuccessE,
-              err => {}
-            );
-            startBtnE.disabled = true;
-            stopBtnE.disabled  = false;
+              errorMessage => { /* opcional: console.log(errorMessage) */ }
+            ).then(() => {
+              startBtnE.disabled = true;
+              stopBtnE.disabled  = false;
+            });
           }
         })
-        .catch(err => console.error(err));
+        .catch(err => console.error('Error al iniciar cámara:', err));
     }
 
     function stopScannerE() {
@@ -71,10 +76,10 @@
           startBtnE.disabled = false;
           stopBtnE.disabled  = true;
         })
-        .catch(err => console.error(err));
+        .catch(err => console.error('Error al detener scanner:', err));
     }
 
     startBtnE.addEventListener("click", startScannerE);
-    stopBtnE .addEventListener("click", stopScannerE);
+    stopBtnE.addEventListener("click", stopScannerE);
   </script>
 {% endblock %}

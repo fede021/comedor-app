@@ -16,22 +16,24 @@
 
   <script src="https://unpkg.com/html5-qrcode"></script>
   <script>
-    const qrRegion = document.getElementById("qr-reader");
     const startBtn = document.getElementById("start-btn");
     const stopBtn  = document.getElementById("stop-btn");
     const html5QrCode = new Html5Qrcode("qr-reader");
-    const configE = {
+    const config = {
       fps: 10,
-      qrbox: { width: 300, height: 300 },
-      videoConstraints: { facingMode: "environment" }
+      qrbox: { width: 350, height: 350 },
+      videoConstraints: {
+        facingMode: { ideal: "environment" },
+        width: { ideal: 1280 },
+        height: { ideal: 720 },
+        focusMode: "continuous"
+      }
     };
 
     function onScanSuccess(decodedText) {
       document.getElementById('dni').value = decodedText;
-      // opcional: detener tras primer acierto
-      html5QrCode.stop();
-      // stopBtn.disabled = true;
-      // startBtn.disabled = false;
+      // Detiene el scanner al primer acierto
+      stopScanner();
     }
 
     function startScanner() {
@@ -42,13 +44,14 @@
               { deviceId: cameras[0].id },
               config,
               onScanSuccess,
-              err => {} 
-            );
-            startBtn.disabled = true;
-            stopBtn.disabled  = false;
+              errorMessage => { /* opcional: console.log(errorMessage) */ }
+            ).then(() => {
+              startBtn.disabled = true;
+              stopBtn.disabled  = false;
+            });
           }
         })
-        .catch(err => console.error(err));
+        .catch(err => console.error('Error al iniciar cámara:', err));
     }
 
     function stopScanner() {
@@ -57,7 +60,7 @@
           startBtn.disabled = false;
           stopBtn.disabled  = true;
         })
-        .catch(err => console.error(err));
+        .catch(err => console.error('Error al detener scanner:', err));
     }
 
     startBtn.addEventListener("click", startScanner);
