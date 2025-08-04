@@ -2,7 +2,9 @@
 {% block content %}
   <h1>Retiro de comida</h1>
 
-  <div id="qr-reader"></div>
+  <!-- contenedor del lector -->
+  <div id="qr-reader" style="width:100%; max-width:400px; margin:1em auto;"></div>
+
   <form method="POST">
     <input name="dni" id="dni" placeholder="Escaneá o escribí DNI completo" required>
     <input name="importe" type="number" step="100" value="1500" placeholder="Importe" required>
@@ -11,13 +13,36 @@
 
   <script src="https://unpkg.com/html5-qrcode"></script>
   <script>
-    function onScanSuccess(decodedText) {
-      document.getElementById('dni').value = decodedText;
-      html5QrcodeScanner.clear();
-    }
-    const html5QrcodeScanner = new Html5QrcodeScanner(
-      "qr-reader", { fps:10, qrbox:250 }
-    );
-    html5QrcodeScanner.render(onScanSuccess);
+    const html5QrCode = new Html5Qrcode("qr-reader");
+    const config = {
+      fps: 10,
+      qrbox: { width: 350, height: 350 },
+      videoConstraints: {
+        facingMode: { ideal: "environment" },
+        width: { ideal: 1280 },
+        height: { ideal: 720 },
+        focusMode: "continuous"
+      }
+    };
+
+    Html5Qrcode.getCameras()
+      .then(cameras => {
+        if (cameras && cameras.length) {
+          html5QrCode.start(
+            { deviceId: cameras[0].id },
+            config,
+            decodedText => {
+              document.getElementById('dni').value = decodedText;
+              html5QrCode.stop();
+            },
+            errorMessage => {
+              // opcional: console.log(errorMessage);
+            }
+          );
+        }
+      })
+      .catch(err => {
+        console.error('Error al obtener cámaras:', err);
+      });
   </script>
 {% endblock %}
